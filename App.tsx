@@ -157,13 +157,11 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen selection:bg-indigo-500/30 bg-[#030303] text-white overflow-x-hidden">
-      {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 blur-[120px] rounded-full"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-violet-600/10 blur-[120px] rounded-full"></div>
       </div>
 
-      {/* Floating UI Elements */}
       {floatingTexts.map(t => (
         <FloatingText key={t.id} data={t} />
       ))}
@@ -180,8 +178,6 @@ const App: React.FC = () => {
       </header>
 
       <main className="container mx-auto px-6 pt-32 pb-12 flex flex-col lg:flex-row gap-12 min-h-screen">
-        
-        {/* Left Side: Clicker Area */}
         <div className="flex-1 flex flex-col items-center justify-center space-y-12 py-12">
           <StatsPanel 
             credits={state.credits} 
@@ -189,10 +185,8 @@ const App: React.FC = () => {
             clickPower={activeClickPower} 
           />
 
-          {/* Main Interaction Core */}
           <div className="relative group">
             <div className="absolute inset-0 bg-indigo-500/20 blur-[80px] rounded-full group-hover:bg-indigo-500/30 transition-all duration-500 animate-pulse"></div>
-            
             <button
               onMouseDown={handleManualClick}
               className="relative w-64 h-64 md:w-80 md:h-80 rounded-full glass glow flex items-center justify-center
@@ -214,7 +208,6 @@ const App: React.FC = () => {
           </p>
         </div>
 
-        {/* Right Side: Upgrades Panel */}
         <div className="w-full lg:w-[450px] flex flex-col space-y-4">
           <div className="sticky top-28 space-y-6">
             <div className="flex justify-between items-end px-2">
