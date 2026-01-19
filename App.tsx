@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GameState, FloatingTextData } from './types';
 import { UPGRADES, SAVE_KEY, PRICE_SCALING } from './constants';
 import { calculatePrice } from './utils/formatters';
@@ -26,18 +26,38 @@ const App: React.FC = () => {
     stateRef.current = state;
   }, [state]);
 
+  const calculatePassiveIncome = (gs: GameState) => {
+    return UPGRADES.reduce((acc, up) => {
+      if (up.type === 'passive') {
+        const count = gs.upgrades[up.id] || 0;
+        return acc + (count * up.baseValue);
+      }
+      return acc;
+    }, 0);
+  };
+
+  const calculateClickPower = (gs: GameState) => {
+    const bonus = UPGRADES.reduce((acc, up) => {
+      if (up.type === 'click') {
+        const count = gs.upgrades[up.id] || 0;
+        return acc + (count * up.baseValue);
+      }
+      return acc;
+    }, 0);
+    return 1 + bonus;
+  };
+
   // Load game state
   useEffect(() => {
     const saved = localStorage.getItem(SAVE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Basic migration/validation
         const loadedState = { ...INITIAL_STATE, ...parsed };
         
         // Idle progress calculation
         const now = Date.now();
-        const secondsPassed = Math.floor((now - loadedState.lastSaved) / 1000);
+        const secondsPassed = Math.floor((now - (loadedState.lastSaved || now)) / 1000);
         
         if (secondsPassed > 0) {
           const idleIncome = calculatePassiveIncome(loadedState) * secondsPassed;
@@ -80,36 +100,15 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const calculatePassiveIncome = (gs: GameState) => {
-    return UPGRADES.reduce((acc, up) => {
-      if (up.type === 'passive') {
-        const count = gs.upgrades[up.id] || 0;
-        return acc + (count * up.baseValue);
-      }
-      return acc;
-    }, 0);
-  };
-
-  const calculateClickPower = (gs: GameState) => {
-    const bonus = UPGRADES.reduce((acc, up) => {
-      if (up.type === 'click') {
-        const count = gs.upgrades[up.id] || 0;
-        return acc + (count * up.baseValue);
-      }
-      return acc;
-    }, 0);
-    return 1 + bonus;
-  };
-
   const handleManualClick = (e: React.MouseEvent | React.TouchEvent) => {
     const clickPower = calculateClickPower(state);
     
     // Position for floating text
-    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    const clientX = 'touches' in e ? (e as React.TouchEvent).touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = 'touches' in e ? (e as React.TouchEvent).touches[0].clientY : (e as React.MouseEvent).clientY;
     
     const newText: FloatingTextData = {
-      id: Date.now(),
+      id: Date.now() + Math.random(),
       x: clientX,
       y: clientY,
       value: clickPower.toFixed(0)
@@ -148,10 +147,16 @@ const App: React.FC = () => {
   const activeCPS = calculatePassiveIncome(state);
   const activeClickPower = calculateClickPower(state);
 
-  if (!isLoaded) return null;
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white font-heading">
+        Initializing Nexus...
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen selection:bg-indigo-500/30">
+    <div className="min-h-screen selection:bg-indigo-500/30 bg-[#030303] text-white overflow-x-hidden">
       {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 blur-[120px] rounded-full"></div>
@@ -186,7 +191,6 @@ const App: React.FC = () => {
 
           {/* Main Interaction Core */}
           <div className="relative group">
-            {/* Pulsing Back Glow */}
             <div className="absolute inset-0 bg-indigo-500/20 blur-[80px] rounded-full group-hover:bg-indigo-500/30 transition-all duration-500 animate-pulse"></div>
             
             <button
@@ -195,7 +199,7 @@ const App: React.FC = () => {
                 active:scale-95 transition-transform duration-75 outline-none ring-offset-4 ring-offset-black ring-indigo-500/20 ring-0 hover:ring-2"
             >
               <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-b from-white/10 to-white/5 border border-white/10 flex items-center justify-center group-hover:border-white/20 transition-all">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-tr from-indigo-500/20 via-violet-500/20 to-indigo-500/20 border border-white/5 flex items-center justify-center animate-spin-slow">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-tr from-indigo-500/20 via-violet-500/20 to-indigo-500/20 border border-white/5 flex items-center justify-center animate-[spin_10s_linear_infinite]">
                    <div className="w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
                 </div>
               </div>
@@ -218,7 +222,7 @@ const App: React.FC = () => {
               <span className="text-[10px] text-white/30 uppercase tracking-widest">Growth Phase 01</span>
             </div>
             
-            <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto pr-2 custom-scrollbar pb-12">
+            <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto pr-2 pb-12">
               {UPGRADES.map(upgrade => (
                 <UpgradeItem
                   key={upgrade.id}
