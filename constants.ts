@@ -67,5 +67,5 @@ export const UPGRADES: Upgrade[] = [
   }
 ];
 
-export const SAVE_KEY = 'nexus_incremental_save_v1';
+export const SAVE_KEY = 'multiclick_save_v1';
 export const PRICE_SCALING = 1.15;

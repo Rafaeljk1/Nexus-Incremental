@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GameState, FloatingTextData } from './types';
 import { UPGRADES, SAVE_KEY, PRICE_SCALING } from './constants';
@@ -21,7 +20,6 @@ const App: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const stateRef = useRef(state);
 
-  // Sync ref with state for the game loop to avoid stale closures
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
@@ -47,15 +45,12 @@ const App: React.FC = () => {
     return 1 + bonus;
   };
 
-  // Load game state
   useEffect(() => {
     const saved = localStorage.getItem(SAVE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         const loadedState = { ...INITIAL_STATE, ...parsed };
-        
-        // Idle progress calculation
         const now = Date.now();
         const secondsPassed = Math.floor((now - (loadedState.lastSaved || now)) / 1000);
         
@@ -64,7 +59,6 @@ const App: React.FC = () => {
           loadedState.credits += idleIncome;
           loadedState.totalCreditsEarned += idleIncome;
         }
-        
         setState(loadedState);
       } catch (e) {
         console.error("Failed to load save data", e);
@@ -73,7 +67,6 @@ const App: React.FC = () => {
     setIsLoaded(true);
   }, []);
 
-  // Save game state
   useEffect(() => {
     if (!isLoaded) return;
     const interval = setInterval(() => {
@@ -85,7 +78,6 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [isLoaded]);
 
-  // Game Loop
   useEffect(() => {
     const interval = setInterval(() => {
       const cps = calculatePassiveIncome(stateRef.current);
@@ -102,10 +94,8 @@ const App: React.FC = () => {
 
   const handleManualClick = (e: React.MouseEvent | React.TouchEvent) => {
     const clickPower = calculateClickPower(state);
-    
-    // Position for floating text
-    const clientX = 'touches' in e ? (e as React.TouchEvent).touches[0].clientX : (e as React.MouseEvent).clientX;
-    const clientY = 'touches' in e ? (e as React.TouchEvent).touches[0].clientY : (e as React.MouseEvent).clientY;
+    const clientX = 'touches' in e ? (e as any).touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = 'touches' in e ? (e as any).touches[0].clientY : (e as React.MouseEvent).clientY;
     
     const newText: FloatingTextData = {
       id: Date.now() + Math.random(),
@@ -149,73 +139,73 @@ const App: React.FC = () => {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-white font-heading">
-        Initializing Nexus...
+      <div style={{ minHeight: '100vh', background: '#000', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        Initializing Multiclick...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen selection:bg-indigo-500/30 bg-[#030303] text-white overflow-x-hidden">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-violet-600/10 blur-[120px] rounded-full"></div>
+    <div className="min-h-screen" style={{ position: 'relative' }}>
+      <div className="fixed inset-0" style={{ pointerEvents: 'none', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '40%', height: '40%', background: 'rgba(99, 102, 241, 0.1)', filter: 'blur(120px)', borderRadius: '50%' }}></div>
+        <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: '50%', height: '50%', background: 'rgba(139, 92, 246, 0.1)', filter: 'blur(120px)', borderRadius: '50%' }}></div>
       </div>
 
       {floatingTexts.map(t => (
         <FloatingText key={t.id} data={t} />
       ))}
 
-      <header className="fixed top-0 left-0 right-0 z-40 p-6 flex justify-between items-center glass border-b border-white/5">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center font-bold text-white">N</div>
-          <span className="font-heading font-extrabold text-xl tracking-tighter">NEXUS</span>
+      <header className="fixed z-40 glass" style={{ top: 0, left: 0, right: 0, padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="flex items-center" style={{ gap: '0.5rem' }}>
+          <div style={{ width: '2rem', height: '2rem', borderRadius: '0.5rem', background: 'linear-gradient(to bottom right, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>M</div>
+          <span className="font-heading" style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.05em' }}>MULTICLICK</span>
         </div>
-        <div className="flex space-x-4 text-[10px] uppercase tracking-widest text-white/40">
-          <div className="hidden md:block">Session: <span className="text-white/80">Active</span></div>
-          <div>Efficiency: <span className="text-white/80">98.4%</span></div>
+        <div style={{ display: 'flex', gap: '1rem', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.4 }}>
+          <span>Session: <strong style={{ color: '#fff' }}>Active</strong></span>
+          <span>Efficiency: <strong style={{ color: '#fff' }}>98.4%</strong></span>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 pt-32 pb-12 flex flex-col lg:flex-row gap-12 min-h-screen">
-        <div className="flex-1 flex flex-col items-center justify-center space-y-12 py-12">
+      <main className="container flex flex-col lg:flex-row" style={{ paddingTop: '8rem', paddingBottom: '3rem', gap: '3rem', minHeight: '100vh' }}>
+        <div className="flex-1 flex flex-col items-center justify-center" style={{ gap: '3rem', padding: '3rem 0' }}>
           <StatsPanel 
             credits={state.credits} 
             cps={activeCPS} 
             clickPower={activeClickPower} 
           />
 
-          <div className="relative group">
-            <div className="absolute inset-0 bg-indigo-500/20 blur-[80px] rounded-full group-hover:bg-indigo-500/30 transition-all duration-500 animate-pulse"></div>
+          <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(99, 102, 241, 0.2)', filter: 'blur(80px)', borderRadius: '50%' }}></div>
             <button
               onMouseDown={handleManualClick}
-              className="relative w-64 h-64 md:w-80 md:h-80 rounded-full glass glow flex items-center justify-center
-                active:scale-95 transition-transform duration-75 outline-none ring-offset-4 ring-offset-black ring-indigo-500/20 ring-0 hover:ring-2"
+              style={{
+                position: 'relative', width: '20rem', height: '20rem', borderRadius: '50%',
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'transform 0.1s'
+              }}
+              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+              onMouseDownCapture={(e) => (e.currentTarget.style.transform = 'scale(0.95)')}
             >
-              <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-b from-white/10 to-white/5 border border-white/10 flex items-center justify-center group-hover:border-white/20 transition-all">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-tr from-indigo-500/20 via-violet-500/20 to-indigo-500/20 border border-white/5 flex items-center justify-center animate-[spin_10s_linear_infinite]">
-                   <div className="w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
-                </div>
+              <div style={{ width: '16rem', height: '16rem', borderRadius: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="animate-spin-slow" style={{ width: '10rem', height: '10rem', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%)' }}></div>
               </div>
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                 <span className="text-white/30 text-xs font-heading tracking-[0.3em] uppercase group-hover:text-white/60 transition-colors">Engage Core</span>
-              </div>
+              <div style={{ position: 'absolute', opacity: 0.3, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3em' }}>Engage Core</div>
             </button>
           </div>
-
-          <p className="text-white/20 text-xs text-center max-w-xs uppercase tracking-widest leading-loose">
-            Tap the Nexus core to generate credits. Upgrades will automate the process.
+          <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', textAlign: 'center', maxWidth: '300px', textTransform: 'uppercase', letterSpacing: '0.1em', lineHeight: 2 }}>
+            Tap the Multiclick core to generate credits. Upgrades will automate the process.
           </p>
         </div>
 
-        <div className="w-full lg:w-[450px] flex flex-col space-y-4">
-          <div className="sticky top-28 space-y-6">
-            <div className="flex justify-between items-end px-2">
-              <h3 className="font-heading font-bold text-2xl">Upgrades</h3>
-              <span className="text-[10px] text-white/30 uppercase tracking-widest">Growth Phase 01</span>
+        <div style={{ width: '100%', maxWidth: '450px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ position: 'sticky', top: '7rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 0.5rem' }}>
+              <h3 className="font-heading" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>Upgrades</h3>
+              <span style={{ fontSize: '10px', opacity: 0.3, textTransform: 'uppercase' }}>Growth Phase 01</span>
             </div>
-            
-            <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto pr-2 pb-12">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: 'calc(100vh - 250px)', overflowY: 'auto', paddingRight: '0.5rem' }}>
               {UPGRADES.map(upgrade => (
                 <UpgradeItem
                   key={upgrade.id}
@@ -230,8 +220,8 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      <footer className="py-8 border-t border-white/5 text-center text-[10px] uppercase tracking-widest text-white/20">
-        &copy; 2024 Nexus Operations Group. Authorized personnel only.
+      <footer style={{ padding: '2rem 0', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.2 }}>
+        &copy; 2024 Multiclick Operations Group. Authorized personnel only.
       </footer>
     </div>
   );

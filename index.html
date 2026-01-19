@@ -3,21 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Incremental</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Multiclick</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #030303;
+            --text: #ffffff;
+            --accent: #6366f1;
+            --accent-violet: #8b5cf6;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #030303;
-            color: #ffffff;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
+
         .font-heading {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+
+        /* Typography & Weight Utilities */
+        .font-black { font-weight: 900; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        
+        .tracking-tighter { letter-spacing: -0.05em; }
+        .tracking-tight { letter-spacing: -0.025em; }
+        .tracking-wider { letter-spacing: 0.05em; }
+        .tracking-widest { letter-spacing: 0.1em; }
+        .tracking-ultra { letter-spacing: 0.3em; }
+
+        .uppercase { text-transform: uppercase; }
+
+        /* Font Sizes */
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-6xl { font-size: 3.75rem; }
+        .text-8xl { font-size: 6rem; }
+
+        @media (max-width: 768px) {
+            .text-6xl { font-size: 3rem; }
+            .text-8xl { font-size: 4rem; }
+        }
+
+        /* Colors & Gradients */
+        .text-white\/40 { color: rgba(255, 255, 255, 0.4); }
+        .text-white\/30 { color: rgba(255, 255, 255, 0.3); }
+        .text-white\/20 { color: rgba(255, 255, 255, 0.2); }
+        .text-indigo-400 { color: #818cf8; }
+        .text-violet-400 { color: #a78bfa; }
+
+        .text-transparent { color: transparent; }
+        .bg-clip-text { -webkit-background-clip: text; background-clip: text; }
+        .bg-gradient-to-b { background-image: linear-gradient(to bottom, var(--tw-gradient-stops)); }
+        .from-white { --tw-gradient-from: #ffffff; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(255, 255, 255, 0)); }
+        .to-white\/60 { --tw-gradient-to: rgba(255, 255, 255, 0.6); }
+
+        /* Layout & Spacing */
+        .min-h-screen { min-height: 100vh; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-x-6 > * + * { margin-left: 1.5rem; }
+        
+        .container { max-width: 1200px; margin: 0 auto; width: 100%; padding: 0 1.5rem; box-sizing: border-box; }
+        .fixed { position: fixed; }
+        .absolute { position: absolute; }
+        .inset-0 { top: 0; left: 0; right: 0; bottom: 0; }
+        .z-40 { z-index: 40; }
+        .z-50 { z-index: 50; }
+
+        /* Glassmorphism */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+        }
+        
         @keyframes float-up {
             0% { transform: translateY(0) scale(1); opacity: 1; }
             100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
@@ -25,32 +103,29 @@
         .animate-float {
             animation: float-up 0.8s ease-out forwards;
         }
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .glass-hover:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        .glow {
-            box-shadow: 0 0 40px -10px rgba(99, 102, 241, 0.3);
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.02);
-        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
+
+        @media (min-width: 1024px) {
+            .lg\:flex-row { flex-direction: row; }
         }
+
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 10s linear infinite;
+        }
+
+        .pointer-events-none { pointer-events: none; }
+        .select-none { user-select: none; }
     </style>
 <script type="importmap">
 {
